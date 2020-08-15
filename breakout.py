@@ -17,8 +17,8 @@ import colors
 
 special_effects = dict(
     long_paddle=(colors.ORANGE,
-                 lambda g: g.paddle._rect.inflate_ip(c.paddle_width // 2, 0),
-                 lambda g: g.paddle._rect.inflate_ip(-c.paddle_width // 2, 0)),
+                 lambda g: g.paddle.rect.inflate_ip(c.paddle_width // 2, 0),
+                 lambda g: g.paddle.rect.inflate_ip(-c.paddle_width // 2, 0)),
     slow_ball=(colors.AQUAMARINE2,
                lambda g: g.change_ball_speed(-1),
                lambda g: g.change_ball_speed(1)),
@@ -56,17 +56,17 @@ class Breakout(Game):
         self.points_per_brick = points
 
     def change_ball_speed(self, dy):
-        self.ball.speed = (self.ball.speed[0], self.ball.speed[1] + dy)
+        self.ball._speed = (self.ball.speed[0], self.ball.speed[1] + dy)
 
     def create_menu(self):
-        def on_play(button):
+        def on_play(_):
             for b in self.menu_buttons:
                 self.objects.remove(b)
 
             self.is_game_running = True
             self.start_level = True
 
-        def on_quit(button):
+        def on_quit(_):
             self.game_over = True
             self.is_game_running = False
             self.game_over = True
@@ -161,7 +161,7 @@ class Breakout(Game):
                          right=Rect(obj.rect.right, obj.rect.top, 1, obj.rect.height),
                          top=Rect(obj.rect.left, obj.rect.top, obj.rect.width, 1),
                          bottom=Rect(obj.rect.left, obj.rect.bottom, obj.rect.width, 1))
-            collisions = set(edge for edge, rect in edges.items() if ball._rect.colliderect(rect))
+            collisions = set(edge for edge, rect in edges.items() if ball.rect.colliderect(rect))
             if not collisions:
                 return None
 
@@ -185,20 +185,19 @@ class Breakout(Game):
                     return 'right'
 
         # Hit paddle
-        s = self.ball.speed
         edge = intersect(self.paddle, self.ball)
         if edge is not None:
             self.sound_effects['paddle_hit'].play()
         if edge == 'top':
-            speed_x = s[0]
-            speed_y = -s[1]
+            speed_x = self.ball.speed[0]
+            speed_y = -self.ball.speed[1]
             if self.paddle.moving_left:
                 speed_x -= 1
             elif self.paddle.moving_left:
                 speed_x += 1
-            self.ball.speed = speed_x, speed_y
+            self.ball._speed = speed_x, speed_y
         elif edge in ('left', 'right'):
-            self.ball.speed = (-s[0], s[1])
+            self.ball._speed = (-self.ball.speed[0], self.ball.speed[1])
 
         # Hit floor
         if self.ball.rect.top > c.screen_height:
@@ -210,11 +209,11 @@ class Breakout(Game):
 
         # Hit ceiling
         if self.ball.rect.top < 0:
-            self.ball.speed = (s[0], -s[1])
+            self.ball._speed = (self.ball.speed[0], -self.ball.speed[1])
 
         # Hit wall
         if self.ball.rect.left < 0 or self.ball.rect.right > c.screen_width:
-            self.ball.speed = (-s[0], s[1])
+            self.ball._speed = (-self.ball.speed[0], self.ball.speed[1])
 
         # Hit brick
         for brick in self.bricks:
@@ -228,9 +227,9 @@ class Breakout(Game):
             self.score += self.points_per_brick
 
             if edge in ('top', 'bottom'):
-                self.ball.speed = (s[0], -s[1])
+                self.ball._speed = (self.ball.speed[0], -self.ball.speed[1])
             else:
-                self.ball.speed = (-s[0], s[1])
+                self.ball._speed = (-self.ball.speed[0], self.ball.speed[1])
 
             if brick.special_effect is not None:
                 # Reset previous effect if any
