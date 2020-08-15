@@ -10,4 +10,4 @@ class Brick(GameObject):
         self.special_effect = special_effect
 
     def draw(self, surface):
-        pygame.draw.rect(surface, self.color, self.bounds)
+        pygame.draw.rect(surface, self.color, self._rect)

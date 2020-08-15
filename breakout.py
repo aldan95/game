@@ -17,8 +17,8 @@ import colors
 
 special_effects = dict(
     long_paddle=(colors.ORANGE,
-                 lambda g: g.paddle.bounds.inflate_ip(c.paddle_width // 2, 0),
-                 lambda g: g.paddle.bounds.inflate_ip(-c.paddle_width // 2, 0)),
+                 lambda g: g.paddle._rect.inflate_ip(c.paddle_width // 2, 0),
+                 lambda g: g.paddle._rect.inflate_ip(-c.paddle_width // 2, 0)),
     slow_ball=(colors.AQUAMARINE2,
                lambda g: g.change_ball_speed(-1),
                lambda g: g.change_ball_speed(1)),
@@ -157,11 +157,11 @@ class Breakout(Game):
 
     def handle_ball_collisions(self):
         def intersect(obj, ball):
-            edges = dict(left=Rect(obj.left, obj.top, 1, obj.height),
-                         right=Rect(obj.right, obj.top, 1, obj.height),
-                         top=Rect(obj.left, obj.top, obj.width, 1),
-                         bottom=Rect(obj.left, obj.bottom, obj.width, 1))
-            collisions = set(edge for edge, rect in edges.items() if ball.bounds.colliderect(rect))
+            edges = dict(left=Rect(obj.rect.left, obj.rect.top, 1, obj.rect.height),
+                         right=Rect(obj.rect.right, obj.rect.top, 1, obj.rect.height),
+                         top=Rect(obj.rect.left, obj.rect.top, obj.rect.width, 1),
+                         bottom=Rect(obj.rect.left, obj.rect.bottom, obj.rect.width, 1))
+            collisions = set(edge for edge, rect in edges.items() if ball._rect.colliderect(rect))
             if not collisions:
                 return None
 
@@ -169,17 +169,17 @@ class Breakout(Game):
                 return list(collisions)[0]
 
             if 'top' in collisions:
-                if ball.centery >= obj.top:
+                if ball.rect.centery >= obj.rect.top:
                     return 'top'
-                if ball.centerx < obj.left:
+                if ball.rect.centerx < obj.rect.left:
                     return 'left'
                 else:
                     return 'right'
 
             if 'bottom' in collisions:
-                if ball.centery >= obj.bottom:
+                if ball.rect.centery >= obj.rect.bottom:
                     return 'bottom'
-                if ball.centerx < obj.left:
+                if ball.rect.centerx < obj.rect.left:
                     return 'left'
                 else:
                     return 'right'
@@ -201,7 +201,7 @@ class Breakout(Game):
             self.ball.speed = (-s[0], s[1])
 
         # Hit floor
-        if self.ball.top > c.screen_height:
+        if self.ball.rect.top > c.screen_height:
             self.lives -= 1
             if self.lives == 0:
                 self.game_over = True
@@ -209,11 +209,11 @@ class Breakout(Game):
                 self.create_ball()
 
         # Hit ceiling
-        if self.ball.top < 0:
+        if self.ball.rect.top < 0:
             self.ball.speed = (s[0], -s[1])
 
         # Hit wall
-        if self.ball.left < 0 or self.ball.right > c.screen_width:
+        if self.ball.rect.left < 0 or self.ball.rect.right > c.screen_width:
             self.ball.speed = (-s[0], s[1])
 
         # Hit brick

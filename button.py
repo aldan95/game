@@ -20,7 +20,7 @@ class Button(GameObject):
                     pressed=c.button_pressed_back_color)[self.state]
 
     def draw(self, surface):
-        pygame.draw.rect(surface, self.back_color, self.bounds)
+        pygame.draw.rect(surface, self.back_color, self._rect)
         self.text.draw(surface)
 
     def handle_mouse_event(self, type, pos):
@@ -32,14 +32,14 @@ class Button(GameObject):
             self.handle_mouse_up(pos)
 
     def handle_mouse_move(self, pos):
-        if self.bounds.collidepoint(pos):
+        if self._rect.collidepoint(pos):
             if self.state != 'pressed':
                 self.state = 'hover'
         else:
             self.state = 'normal'
 
     def handle_mouse_down(self, pos):
-        if self.bounds.collidepoint(pos):
+        if self._rect.collidepoint(pos):
             self.state = 'pressed'
 
     def handle_mouse_up(self, pos):

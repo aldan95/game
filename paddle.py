@@ -13,7 +13,7 @@ class Paddle(GameObject):
         self.moving_right = False
 
     def draw(self, surface):
-        pygame.draw.rect(surface, self.color, self.bounds)
+        pygame.draw.rect(surface, self.color, self._rect)
 
     def handle(self, key):
         if key == pygame.K_LEFT:
@@ -23,9 +23,9 @@ class Paddle(GameObject):
 
     def update(self):
         if self.moving_left:
-            dx = -(min(self.offset, self.left))
+            dx = -(min(self.offset, self.rect.left))
         elif self.moving_right:
-            dx = min(self.offset, c.screen_width - self.right)
+            dx = min(self.offset, c.screen_width - self.rect.right)
         else:
             return
 
