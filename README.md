@@ -1,4 +1,6 @@
-# PyGame Breakout
+# ~~PyGame Breakout~~ PyGame sample game
+
+(cloned from https://gitlab.com/the-gigi/pygame-breakout and mutated)
 
 This is a simple implementation with Python 3 and PyGame of the classic [Breakout](https://en.wikipedia.org/wiki/Breakout_(video_game)) game. The purpose is to serve as a demo game for a
 series of articles on building games with Python 3 and PyGame:
