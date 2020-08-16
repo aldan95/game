@@ -12,6 +12,7 @@ from brick import Brick
 from button import Button
 from game import Game
 from paddle import Paddle
+from rocket import Rocket
 from text_object import TextObject
 import colors
 
@@ -44,6 +45,7 @@ class Breakout(Game):
         self.paddle = None
         self.bricks = None
         self.ball = None
+        self.rocket = None
         self.menu_buttons = []
         self.is_game_running = False
         self.create_objects()
@@ -89,6 +91,7 @@ class Breakout(Game):
         self.create_ball()
         self.create_labels()
         self.create_menu()
+        self.create_rocket()
 
     def create_labels(self):
         self.score_label = TextObject(c.score_offset,
@@ -128,6 +131,17 @@ class Breakout(Game):
         self.keyup_handlers[pygame.K_RIGHT].append(paddle.handle)
         self.paddle = paddle
         self.objects.append(self.paddle)
+
+    def create_rocket(self):
+        rocket = Rocket(0, c.screen_height/2)
+        self.keydown_handlers[pygame.K_UP].append(rocket.handle_down)
+        self.keydown_handlers[pygame.K_DOWN].append(rocket.handle_down)
+        self.keydown_handlers[pygame.K_SPACE].append(rocket.handle_down)
+        self.keyup_handlers[pygame.K_UP].append(rocket.handle_up)
+        self.keyup_handlers[pygame.K_DOWN].append(rocket.handle_up)
+        self.keyup_handlers[pygame.K_SPACE].append(rocket.handle_up)
+        self.rocket = rocket
+        self.objects.append(self.rocket)
 
     def create_bricks(self):
         w = c.brick_width
