@@ -7,58 +7,37 @@ import pygame
 from pygame.rect import Rect
 
 import config as c
-from ball import Ball
-from brick import Brick
 from button import Button
 from game import Game
-from paddle import Paddle
 from rocket import Rocket
+from alien import Alien
+from bullet import Bullet
+from boom import Boom
 from text_object import TextObject
 import colors
 
-special_effects = dict(
-    long_paddle=(colors.ORANGE,
-                 lambda g: g.paddle.rect.inflate_ip(c.paddle_width // 2, 0),
-                 lambda g: g.paddle.rect.inflate_ip(-c.paddle_width // 2, 0)),
-    slow_ball=(colors.AQUAMARINE2,
-               lambda g: g.change_ball_speed(-1),
-               lambda g: g.change_ball_speed(1)),
-    tripple_points=(colors.DARKSEAGREEN4,
-                    lambda g: g.set_points_per_brick(3),
-                    lambda g: g.set_points_per_brick(1)),
-    extra_life=(colors.GOLD1,
-                lambda g: g.add_life(),
-                lambda g: None))
-
 assert os.path.isfile('sound_effects/brick_hit.wav')
-
 
 class Breakout(Game):
     def __init__(self):
-        Game.__init__(self, 'Breakout', c.screen_width, c.screen_height, c.background_image, c.frame_rate)
+        Game.__init__(self, 'Space Insiders', c.screen_width, c.screen_height, c.background_image, c.frame_rate)
         self.sound_effects = {name: pygame.mixer.Sound(sound) for name, sound in c.sounds_effects.items()}
         self.reset_effect = None
         self.effect_start_time = None
         self.score = 0
         self.lives = c.initial_lives
         self.start_level = False
-        self.paddle = None
-        self.bricks = None
-        self.ball = None
         self.rocket = None
         self.menu_buttons = []
         self.is_game_running = False
+        self.aliens = []
+        self.bullets = []
+        self.booms = []
         self.create_objects()
-        self.points_per_brick = 1
+        self.screen = Rect(0, 0, c.screen_width, c.screen_height)
 
     def add_life(self):
         self.lives += 1
-
-    def set_points_per_brick(self, points):
-        self.points_per_brick = points
-
-    def change_ball_speed(self, dy):
-        self.ball._speed = (self.ball.speed[0], self.ball.speed[1] + dy)
 
     def create_menu(self):
         def on_play(_):
@@ -74,7 +53,7 @@ class Breakout(Game):
             self.game_over = True
 
         for i, (text, click_handler) in enumerate((('PLAY', on_play), ('QUIT', on_quit))):
-            b = Button(c.menu_offset_x,
+            b = Button((c.screen_width - c.menu_button_w) / 2,
                        c.menu_offset_y + (c.menu_button_h + 5) * i,
                        c.menu_button_w,
                        c.menu_button_h,
@@ -86,12 +65,12 @@ class Breakout(Game):
             self.mouse_handlers.append(b.handle_mouse_event)
 
     def create_objects(self):
-        self.create_bricks()
-        self.create_paddle()
-        self.create_ball()
         self.create_labels()
         self.create_menu()
         self.create_rocket()
+        self.create_alien()
+        self.create_alien()
+        self.create_alien()
 
     def create_labels(self):
         self.score_label = TextObject(c.score_offset,
@@ -109,29 +88,6 @@ class Breakout(Game):
                                       c.font_size)
         self.objects.append(self.lives_label)
 
-    def create_ball(self):
-        speed = (random.randint(-2, 2), c.ball_speed)
-        self.ball = Ball(c.screen_width // 2,
-                         c.screen_height // 2,
-                         c.ball_radius,
-                         c.ball_color,
-                         speed)
-        self.objects.append(self.ball)
-
-    def create_paddle(self):
-        paddle = Paddle((c.screen_width - c.paddle_width) // 2,
-                        c.screen_height - c.paddle_height * 2,
-                        c.paddle_width,
-                        c.paddle_height,
-                        c.paddle_color,
-                        c.paddle_speed)
-        self.keydown_handlers[pygame.K_LEFT].append(paddle.handle)
-        self.keydown_handlers[pygame.K_RIGHT].append(paddle.handle)
-        self.keyup_handlers[pygame.K_LEFT].append(paddle.handle)
-        self.keyup_handlers[pygame.K_RIGHT].append(paddle.handle)
-        self.paddle = paddle
-        self.objects.append(self.paddle)
-
     def create_rocket(self):
         rocket = Rocket(0, c.screen_height/2)
         self.keydown_handlers[pygame.K_UP].append(rocket.handle_down)
@@ -143,118 +99,20 @@ class Breakout(Game):
         self.rocket = rocket
         self.objects.append(self.rocket)
 
-    def create_bricks(self):
-        w = c.brick_width
-        h = c.brick_height
-        brick_count = c.screen_width // (w + 1)
-        offset_x = (c.screen_width - brick_count * (w + 1)) // 2
+    def create_alien(self):
+        alien = Alien(c.screen_width-30, random.randint(0, c.screen_height - 40))
+        self.aliens.append(alien)
+        self.objects.append(alien)
 
-        bricks = []
-        for row in range(c.row_count):
-            for col in range(brick_count):
-                effect = None
-                brick_color = c.brick_color
-                index = random.randint(0, 10)
-                if index < len(special_effects):
-                    brick_color, start_effect_func, reset_effect_func = list(special_effects.values())[index]
-                    effect = start_effect_func, reset_effect_func
+    def create_bullet(self):
+        bullet = Bullet(self.rocket.rect.right, self.rocket.rect.top + self.rocket.rect.height/2)
+        self.bullets.append(bullet)
+        self.objects.append(bullet)
 
-                brick = Brick(offset_x + col * (w + 1),
-                              c.offset_y + row * (h + 1),
-                              w,
-                              h,
-                              brick_color,
-                              effect)
-                bricks.append(brick)
-                self.objects.append(brick)
-        self.bricks = bricks
-
-    def handle_ball_collisions(self):
-        def intersect(obj, ball):
-            edges = dict(left=Rect(obj.rect.left, obj.rect.top, 1, obj.rect.height),
-                         right=Rect(obj.rect.right, obj.rect.top, 1, obj.rect.height),
-                         top=Rect(obj.rect.left, obj.rect.top, obj.rect.width, 1),
-                         bottom=Rect(obj.rect.left, obj.rect.bottom, obj.rect.width, 1))
-            collisions = set(edge for edge, rect in edges.items() if ball.rect.colliderect(rect))
-            if not collisions:
-                return None
-
-            if len(collisions) == 1:
-                return list(collisions)[0]
-
-            if 'top' in collisions:
-                if ball.rect.centery >= obj.rect.top:
-                    return 'top'
-                if ball.rect.centerx < obj.rect.left:
-                    return 'left'
-                else:
-                    return 'right'
-
-            if 'bottom' in collisions:
-                if ball.rect.centery >= obj.rect.bottom:
-                    return 'bottom'
-                if ball.rect.centerx < obj.rect.left:
-                    return 'left'
-                else:
-                    return 'right'
-
-        # Hit paddle
-        edge = intersect(self.paddle, self.ball)
-        if edge is not None:
-            self.sound_effects['paddle_hit'].play()
-        if edge == 'top':
-            speed_x = self.ball.speed[0]
-            speed_y = -self.ball.speed[1]
-            if self.paddle.moving_left:
-                speed_x -= 1
-            elif self.paddle.moving_left:
-                speed_x += 1
-            self.ball._speed = speed_x, speed_y
-        elif edge in ('left', 'right'):
-            self.ball._speed = (-self.ball.speed[0], self.ball.speed[1])
-
-        # Hit floor
-        if self.ball.rect.top > c.screen_height:
-            self.lives -= 1
-            if self.lives == 0:
-                self.game_over = True
-            else:
-                self.create_ball()
-
-        # Hit ceiling
-        if self.ball.rect.top < 0:
-            self.ball._speed = (self.ball.speed[0], -self.ball.speed[1])
-
-        # Hit wall
-        if self.ball.rect.left < 0 or self.ball.rect.right > c.screen_width:
-            self.ball._speed = (-self.ball.speed[0], self.ball.speed[1])
-
-        # Hit brick
-        for brick in self.bricks:
-            edge = intersect(brick, self.ball)
-            if not edge:
-                continue
-
-            self.sound_effects['brick_hit'].play()
-            self.bricks.remove(brick)
-            self.objects.remove(brick)
-            self.score += self.points_per_brick
-
-            if edge in ('top', 'bottom'):
-                self.ball._speed = (self.ball.speed[0], -self.ball.speed[1])
-            else:
-                self.ball._speed = (-self.ball.speed[0], self.ball.speed[1])
-
-            if brick.special_effect is not None:
-                # Reset previous effect if any
-                if self.reset_effect is not None:
-                    self.reset_effect(self)
-
-                # Trigger special effect
-                self.effect_start_time = datetime.now()
-                brick.special_effect[0](self)
-                # Set current reset effect function
-                self.reset_effect = brick.special_effect[1]
+    def create_boom(self, x, y):
+        boom = Boom(x, y)
+        self.booms.append(boom)
+        self.objects.append(boom)
 
     def update(self):
         if not self.is_game_running:
@@ -264,7 +122,7 @@ class Breakout(Game):
             self.start_level = False
             self.show_message('GET READY!', centralized=True)
 
-        if not self.bricks:
+        if not self.aliens:
             self.show_message('YOU WIN!!!', centralized=True)
             self.is_game_running = False
             self.game_over = True
@@ -276,11 +134,51 @@ class Breakout(Game):
                 self.reset_effect(self)
                 self.reset_effect = None
 
-        self.handle_ball_collisions()
+        if self.rocket.fire:
+            self.create_bullet()
+        self.handle_aliens()
         super().update()
 
         if self.game_over:
             self.show_message('GAME OVER!', centralized=True)
+
+    def handle_aliens(self):
+        def intersect(s, a):
+            return s.left < a.right and s.right > a.left and s.top < a.bottom and s.bottom > a.top
+
+        if self.rocket.boomed:
+            self.game_over = True
+            return
+
+        for alien in self.aliens:
+            if not intersect(self.screen, alien.rect):
+                self.objects.remove(alien)
+                self.aliens.remove(alien)
+            if intersect(self.rocket.rect, alien.rect):
+                self.rocket.boom()
+                self.sound_effects['brick_hit'].play()
+                return
+
+        if len(self.aliens) < 3:
+            self.create_alien()
+        for bullet in self.bullets:
+            if intersect(self.screen, bullet.rect):
+                for alien in self.aliens:
+                    if intersect(alien.rect, bullet.rect):
+                        self.create_boom(alien.rect.left, alien.rect.top)
+                        self.objects.remove(bullet)
+                        self.bullets.remove(bullet)
+                        self.objects.remove(alien)
+                        self.aliens.remove(alien)
+                        self.sound_effects['brick_hit'].play()
+                        break
+            else:
+                self.objects.remove(bullet)
+                self.bullets.remove(bullet)
+        for boom in self.booms:
+            if boom.life <= 0:
+                self.booms.remove(boom)
+                self.objects.remove(boom)
 
     def show_message(self, text, color=colors.WHITE, font_name='Arial', font_size=20, centralized=False):
         message = TextObject(c.screen_width // 2, c.screen_height // 2, lambda: text, color, font_name, font_size)
