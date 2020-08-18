@@ -175,6 +175,7 @@ class Breakout(Game):
                         self.bullets.remove(bullet)
                         self.objects.remove(alien)
                         self.aliens.remove(alien)
+                        self.score = self.score + 1
                         self.sound_effects['brick_hit'].play()
                         break
             else:
