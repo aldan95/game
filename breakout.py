@@ -27,6 +27,8 @@ class Breakout(Game):
         self.score = 0
         self.lives = c.initial_lives
         self.start_level = False
+        self.alien_count = 3
+        self.aliens_to_pass = self.alien_count * 3
         self.rocket = None
         self.menu_buttons = []
         self.is_game_running = False
@@ -68,9 +70,8 @@ class Breakout(Game):
         self.create_labels()
         self.create_menu()
         self.create_rocket()
-        self.create_alien()
-        self.create_alien()
-        self.create_alien()
+        for i in range(1, self.alien_count):
+            self.create_alien()
 
     def create_labels(self):
         self.score_label = TextObject(c.score_offset,
@@ -103,6 +104,10 @@ class Breakout(Game):
         alien = Alien(c.screen_width-30, random.randint(0, c.screen_height - 40))
         self.aliens.append(alien)
         self.objects.append(alien)
+        self.aliens_to_pass = self.aliens_to_pass - 1
+        if self.aliens_to_pass == 0:
+            self.alien_count = self.alien_count + 1
+            self.aliens_to_pass = self.alien_count * 3
 
     def create_bullet(self):
         bullet = Bullet(self.rocket.rect.right, self.rocket.rect.top + self.rocket.rect.height/2)
@@ -159,7 +164,7 @@ class Breakout(Game):
                 self.sound_effects['brick_hit'].play()
                 return
 
-        if len(self.aliens) < 3:
+        if len(self.aliens) < self.alien_count:
             self.create_alien()
         for bullet in self.bullets:
             if intersect(self.screen, bullet.rect):

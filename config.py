@@ -24,7 +24,7 @@ paddle_speed = 6
 status_offset_y = 5
 
 text_color = colors.YELLOW1
-initial_lives = 3
+initial_lives = 1
 lives_right_offset = 85
 lives_offset = screen_width - lives_right_offset
 score_offset = 5
