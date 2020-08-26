@@ -10,7 +10,11 @@ import config as c
 from button import Button
 from game import Game
 from rocket import Rocket
-from alien import Alien
+#from alien import Alien
+from alien import Alien_UFO
+from alien import Alien_Bug
+from alien import Alien_Triangle
+from alien import Alien_Meteor
 from bullet import Bullet
 from boom import Boom
 from text_object import TextObject
@@ -27,7 +31,7 @@ class Breakout(Game):
         self.score = 0
         self.lives = c.initial_lives
         self.start_level = False
-        self.alien_count = 3
+        self.alien_count = 2
         self.aliens_to_pass = self.alien_count * 3
         self.rocket = None
         self.menu_buttons = []
@@ -71,7 +75,15 @@ class Breakout(Game):
         self.create_menu()
         self.create_rocket()
         for i in range(1, self.alien_count):
-            self.create_alien()
+            random1 = random.randint(1,4)
+            if random1 == 1:
+                self.create_alien_UFO()
+            if random1 == 2:
+                self.create_alien_Bug()
+            if random1 == 3:
+                self.create_alien_Triangle()
+            if random1 == 4:
+                self.create_alien_Meteor()
 
     def create_labels(self):
         self.score_label = TextObject(c.score_offset,
@@ -100,10 +112,46 @@ class Breakout(Game):
         self.rocket = rocket
         self.objects.append(self.rocket)
 
-    def create_alien(self):
-        alien = Alien(c.screen_width-30, random.randint(0, c.screen_height - 40))
+    '''def create_alien(self):
+        alien = Alien(c.screen_width - 30, random.randint(0, c.screen_height - 40))
         self.aliens.append(alien)
         self.objects.append(alien)
+        self.aliens_to_pass = self.aliens_to_pass - 1
+        if self.aliens_to_pass == 0:
+            self.alien_count = self.alien_count + 1
+            self.aliens_to_pass = self.alien_count * 3'''
+
+    def create_alien_UFO(self):
+        alien_UFO = Alien_UFO(c.screen_width-30, random.randint(0, c.screen_height - 40))
+        self.aliens.append(alien_UFO)
+        self.objects.append(alien_UFO)
+        self.aliens_to_pass = self.aliens_to_pass - 1
+        if self.aliens_to_pass == 0:
+            self.alien_count = self.alien_count + 1
+            self.aliens_to_pass = self.alien_count * 3
+
+    def create_alien_Triangle(self):
+        alien_Triangle = Alien_Triangle(c.screen_width-30, random.randint(0, c.screen_height - 40))
+        self.aliens.append(alien_Triangle)
+        self.objects.append(alien_Triangle)
+        self.aliens_to_pass = self.aliens_to_pass - 1
+        if self.aliens_to_pass == 0:
+            self.alien_count = self.alien_count + 1
+            self.aliens_to_pass = self.alien_count * 3
+
+    def create_alien_Bug(self):
+        alien_Bug = Alien_Bug(c.screen_width-30, random.randint(0, c.screen_height - 40))
+        self.aliens.append(alien_Bug)
+        self.objects.append(alien_Bug)
+        self.aliens_to_pass = self.aliens_to_pass - 1
+        if self.aliens_to_pass == 0:
+            self.alien_count = self.alien_count + 1
+            self.aliens_to_pass = self.alien_count * 3
+
+    def create_alien_Meteor(self):
+        alien_Meteor = Alien_Meteor(c.screen_width-30, random.randint(0, c.screen_height - 40))
+        self.aliens.append(alien_Meteor)
+        self.objects.append(alien_Meteor)
         self.aliens_to_pass = self.aliens_to_pass - 1
         if self.aliens_to_pass == 0:
             self.alien_count = self.alien_count + 1
@@ -165,7 +213,19 @@ class Breakout(Game):
                 return
 
         if len(self.aliens) < self.alien_count:
-            self.create_alien()
+            '''self.create_alien_UFO()
+            self.create_alien_Triangle()
+            self.create_alien_Bug()
+            self.create_alien_Meteor()'''
+            a = random.randint(1,4)
+            if a == 1:
+                self.create_alien_UFO()
+            if a == 2:
+                self.create_alien_Triangle()
+            if a == 3:
+                self.create_alien_Bug()
+            if a == 4:
+                self.create_alien_Meteor()
         for bullet in self.bullets:
             if intersect(self.screen, bullet.rect):
                 for alien in self.aliens:
