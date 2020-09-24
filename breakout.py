@@ -18,6 +18,7 @@ from alien import Alien_Meteor
 from bullet import Bullet
 from boom import Boom
 from text_object import TextObject
+from gameplay import Gameplay
 import colors
 
 assert os.path.isfile('sound_effects/brick_hit.wav')
@@ -41,6 +42,7 @@ class Breakout(Game):
         self.booms = []
         self.create_objects()
         self.screen = Rect(0, 0, c.screen_width, c.screen_height)
+        self.gameplay = Gameplay(self)
 
     def add_life(self):
         self.lives += 1
@@ -212,11 +214,9 @@ class Breakout(Game):
                 self.sound_effects['brick_hit'].play()
                 return
 
+        self.gameplay.tick(len(self.aliens))
+        '''
         if len(self.aliens) < self.alien_count:
-            '''self.create_alien_UFO()
-            self.create_alien_Triangle()
-            self.create_alien_Bug()
-            self.create_alien_Meteor()'''
             a = random.randint(1,4)
             if a == 1:
                 self.create_alien_UFO()
@@ -226,6 +226,7 @@ class Breakout(Game):
                 self.create_alien_Bug()
             if a == 4:
                 self.create_alien_Meteor()
+        '''
         for bullet in self.bullets:
             if intersect(self.screen, bullet.rect):
                 for alien in self.aliens:
