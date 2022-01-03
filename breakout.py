@@ -1,24 +1,25 @@
+import os
 import random
+import time
 from datetime import datetime, timedelta
 
-import os
-import time
 import pygame
 from pygame.rect import Rect
 
+import colors
 import config as c
+from alien import Alien_Bug
+from alien import Alien_Meteor
+from alien import Alien_Triangle
+from alien import Alien_UFO
+from boom import Boom
+from bullet import Bullet
 from button import Button
 from game import Game
 from rocket import Rocket
-#from alien import Alien
-from alien import Alien_UFO
-from alien import Alien_Bug
-from alien import Alien_Triangle
-from alien import Alien_Meteor
-from bullet import Bullet
-from boom import Boom
+from boss import Boss
+from damage import Damage
 from text_object import TextObject
-import colors
 
 assert os.path.isfile('sound_effects/brick_hit.wav')
 
@@ -39,6 +40,8 @@ class Breakout(Game):
         self.aliens = []
         self.bullets = []
         self.booms = []
+        self.damages = []
+        self.boss = []
         self.create_objects()
         self.screen = Rect(0, 0, c.screen_width, c.screen_height)
 
@@ -84,6 +87,7 @@ class Breakout(Game):
                 self.create_alien_Triangle()
             if random1 == 4:
                 self.create_alien_Meteor()
+        self.create_boss()
 
     def create_labels(self):
         self.score_label = TextObject(c.score_offset,
@@ -111,6 +115,10 @@ class Breakout(Game):
         self.keyup_handlers[pygame.K_SPACE].append(rocket.handle_up)
         self.rocket = rocket
         self.objects.append(self.rocket)
+
+    def create_boss(self):
+        self.boss = Boss('images/1.png', c.screen_width-200, c.screen_height/2, 5)
+        self.objects.append(self.boss)
 
     '''def create_alien(self):
         alien = Alien(c.screen_width - 30, random.randint(0, c.screen_height - 40))
@@ -167,6 +175,11 @@ class Breakout(Game):
         self.booms.append(boom)
         self.objects.append(boom)
 
+    def create_damage(self, x, y):
+        damage = Damage(x, y)
+        self.damages.append(damage)
+        self.objects.append(damage)
+
     def update(self):
         if not self.is_game_running:
             return
@@ -190,6 +203,7 @@ class Breakout(Game):
         if self.rocket.fire:
             self.create_bullet()
         self.handle_aliens()
+        self.handle_Boss()
         super().update()
 
         if self.game_over:
@@ -226,6 +240,7 @@ class Breakout(Game):
                 self.create_alien_Bug()
             if a == 4:
                 self.create_alien_Meteor()
+
         for bullet in self.bullets:
             if intersect(self.screen, bullet.rect):
                 for alien in self.aliens:
@@ -245,6 +260,53 @@ class Breakout(Game):
             if boom.life <= 0:
                 self.booms.remove(boom)
                 self.objects.remove(boom)
+
+    def handle_Boss(self):
+        def intersect(s, b):
+            return s.left < b.right and s.right > b.left and s.top < b.bottom and s.bottom > b.top
+
+        if self.rocket.boomed:
+            self.game_over = True
+            return
+
+
+        for bullet in self.bullets:
+            if intersect(self.screen, bullet.rect):
+                if intersect(self.boss.rect, bullet.rect):
+                    if self.boss in self.objects and self.boss.hp == 1:
+                        self.create_boom(self.boss.rect.left, self.boss.rect.top)
+                        self.objects.remove(bullet)
+                        self.bullets.remove(bullet)
+                        self.objects.remove(self.boss)
+                        self.score = self.score + 5
+                        self.sound_effects['brick_hit'].play()
+                        break
+                    if self.boss in self.objects and self.boss.hp > 1:
+                        if self.boss.switcher: #едет вверх
+                            self.create_damage(self.boss.rect.left, self.boss.rect.top-3) #-3 чтобы урон не отставал от текстуры босса
+                            self.boss.hp -= 1
+                            self.objects.remove(bullet)
+                            self.bullets.remove(bullet)
+                            break
+                        else: #едет вниз
+                            self.create_damage(self.boss.rect.left, self.boss.rect.top+3) #+4 чтобы урон не отставал от текстуры босса
+                            self.boss.hp -= 1
+                            self.objects.remove(bullet)
+                            self.bullets.remove(bullet)
+                            break
+            else:
+                self.objects.remove(bullet)
+                self.bullets.remove(bullet)
+        for boom in self.booms:
+            if boom.life <= 0:
+                self.booms.remove(boom)
+                self.objects.remove(boom)
+
+        for damage in self.damages:
+            if damage.life <= 0:
+                self.damages.remove(damage)
+                self.objects.remove(damage)
+
 
     def show_message(self, text, color=colors.WHITE, font_name='Arial', font_size=20, centralized=False):
         message = TextObject(c.screen_width // 2, c.screen_height // 2, lambda: text, color, font_name, font_size)
