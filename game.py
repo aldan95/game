@@ -3,7 +3,6 @@ import sys
 
 from collections import defaultdict
 
-
 class Game:
     def __init__(self, caption, width, height, back_image_filename, frame_rate):
         self.background_image = pygame.image.load(back_image_filename)
@@ -19,6 +18,7 @@ class Game:
         self.keydown_handlers = defaultdict(list)
         self.keyup_handlers = defaultdict(list)
         self.mouse_handlers = []
+
 
     def update(self):
         for o in self.objects:
@@ -43,6 +43,9 @@ class Game:
                 for handler in self.mouse_handlers:
                     handler(event.type, event.pos)
 
+    def leaderboard(self):    #функция написана в breakout, но вызывается здесь
+        pass
+
     def run(self):
         while not self.game_over:
             self.surface.blit(self.background_image, (0, 0))
@@ -53,3 +56,4 @@ class Game:
 
             pygame.display.update()
             self.clock.tick(self.frame_rate)
+        self.leaderboard()

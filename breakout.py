@@ -19,9 +19,11 @@ from game import Game
 from rocket import Rocket
 from boss import Boss
 from damage import Damage
+from boss_bullet import Boss_bullet
 from text_object import TextObject
 
 assert os.path.isfile('sound_effects/brick_hit.wav')
+
 
 class Breakout(Game):
     def __init__(self):
@@ -36,30 +38,78 @@ class Breakout(Game):
         self.aliens_to_pass = self.alien_count * 3
         self.rocket = None
         self.menu_buttons = []
-        self.is_game_running = False
+        self.is_game_running_normal = False
+        self.is_game_running_boss = False
         self.aliens = []
         self.bullets = []
         self.booms = []
         self.damages = []
+        self.boss_score = 2   #сколько очков нужно набрать чтобы появился босс
+        self.boss_created = False
+        self.boss_bullets = []
         self.boss = []
+        self.boss_bullet_delay_next = 100
+        self.boss_hp = 20
         self.create_objects()
         self.screen = Rect(0, 0, c.screen_width, c.screen_height)
+
 
     def add_life(self):
         self.lives += 1
 
     def create_menu(self):
         def on_play(_):
+
+            def on_ns(_):
+
+                for b in self.menu_buttons:
+                    self.objects.remove(b)
+                self.is_game_running_normal = True
+                self.start_level = True
+
+            def on_bs(_):
+                for b in self.menu_buttons:
+                    self.objects.remove(b)
+                self.is_game_running_boss = True
+                self.start_level = True
+
+            def on_back(_):
+                for b in self.menu_buttons:
+                    self.objects.remove(b)
+                self.menu_buttons.clear()
+                self.mouse_handlers.clear()
+                self.create_menu()
+                return
+
             for b in self.menu_buttons:
                 self.objects.remove(b)
+            self.menu_buttons.clear()
+            self.mouse_handlers.clear()
 
-            self.is_game_running = True
-            self.start_level = True
+            for i, (text, click_handler) in enumerate((('NORMAL SURVIVAL', on_ns), ('BOSS SURVIVAL', on_bs), ('BACK', on_back))):
+                b = Button((c.screen_width - c.menu_button_w) / 2 - 45,  #-45 чтобы было ровно по центру
+                           c.menu_offset_y + (c.menu_button_h + 5) * i,
+                           c.menu_button_w+90,
+                           c.menu_button_h,
+                           text,
+                           click_handler,
+                           padding=5)
+                self.objects.append(b)
+                self.menu_buttons.append(b)
+                self.mouse_handlers.append(b.handle_mouse_event)
+
+
+
+
+            #for b in self.menu_buttons:
+            #    self.objects.remove(b)
+
+            #self.is_game_running = True
+            #self.start_level = True
 
         def on_quit(_):
             self.game_over = True
             self.is_game_running = False
-            self.game_over = True
 
         for i, (text, click_handler) in enumerate((('PLAY', on_play), ('QUIT', on_quit))):
             b = Button((c.screen_width - c.menu_button_w) / 2,
@@ -72,6 +122,8 @@ class Breakout(Game):
             self.objects.append(b)
             self.menu_buttons.append(b)
             self.mouse_handlers.append(b.handle_mouse_event)
+
+
 
     def create_objects(self):
         self.create_labels()
@@ -87,7 +139,7 @@ class Breakout(Game):
                 self.create_alien_Triangle()
             if random1 == 4:
                 self.create_alien_Meteor()
-        self.create_boss()
+        #self.create_boss()
 
     def create_labels(self):
         self.score_label = TextObject(c.score_offset,
@@ -117,8 +169,10 @@ class Breakout(Game):
         self.objects.append(self.rocket)
 
     def create_boss(self):
-        self.boss = Boss('images/1.png', c.screen_width-200, c.screen_height/2, 5)
+        self.boss = Boss('images/1.png', c.screen_width, c.screen_height/2, 5)
+        self.boss.hp = self.boss_hp
         self.objects.append(self.boss)
+        self.boss._boom = False
 
     '''def create_alien(self):
         alien = Alien(c.screen_width - 30, random.randint(0, c.screen_height - 40))
@@ -170,6 +224,11 @@ class Breakout(Game):
         self.bullets.append(bullet)
         self.objects.append(bullet)
 
+    def create_boss_bullet(self):
+        boss_bullet = Boss_bullet(self.boss.rect.left+10, self.boss.rect.top + self.boss.rect.height/2)
+        self.boss_bullets.append(boss_bullet)
+        self.objects.append(boss_bullet)
+
     def create_boom(self, x, y):
         boom = Boom(x, y)
         self.booms.append(boom)
@@ -181,18 +240,18 @@ class Breakout(Game):
         self.objects.append(damage)
 
     def update(self):
-        if not self.is_game_running:
+        if not self.is_game_running_normal and not self.is_game_running_boss:
             return
 
         if self.start_level:
             self.start_level = False
             self.show_message('GET READY!', centralized=True)
 
-        if not self.aliens:
-            self.show_message('YOU WIN!!!', centralized=True)
+        '''if not self.aliens:
+            self.show_message('YOU WIN!!!', centralized=True)    победа
             self.is_game_running = False
             self.game_over = True
-            return
+            return'''
 
         # Reset special effect if needed
         if self.reset_effect:
@@ -202,8 +261,28 @@ class Breakout(Game):
 
         if self.rocket.fire:
             self.create_bullet()
-        self.handle_aliens()
-        self.handle_Boss()
+        if not self.boss_created or self.boss._boom:
+            self.handle_aliens()
+        else:
+            for alien in self.aliens:
+                self.create_boom(alien.rect.left, alien.rect.top)
+                self.objects.remove(alien)
+                self.aliens.remove(alien)
+                #self.score = self.score + 1
+                self.sound_effects['brick_hit'].play()
+                break
+
+        if self.is_game_running_boss:
+            if self.score >= self.boss_score and not self.boss_created:
+                self.create_boss()
+                self.boss_created = True
+            elif self.score >= self.boss_score and self.boss_created:
+                self.handle_Boss()
+                if not self.boss._boom and self.boss.bullet_delay < self.boss_bullet_delay_next:
+                    self.boss.bullet_delay += 1
+                elif not self.boss._boom and self.boss.bullet_delay == self.boss_bullet_delay_next:
+                    self.boss.bullet_delay = 0
+                    self.create_boss_bullet()
         super().update()
 
         if self.game_over:
@@ -261,6 +340,7 @@ class Breakout(Game):
                 self.booms.remove(boom)
                 self.objects.remove(boom)
 
+
     def handle_Boss(self):
         def intersect(s, b):
             return s.left < b.right and s.right > b.left and s.top < b.bottom and s.bottom > b.top
@@ -280,9 +360,21 @@ class Breakout(Game):
                         self.objects.remove(self.boss)
                         self.score = self.score + 5
                         self.sound_effects['brick_hit'].play()
-                        break
+                        self.boss._boom = True
+                        self.boss_score += 50
+                        self.boss_hp += 10
+                        self.boss_bullet_delay_next -= 5
+                        self.boss_created = False
+
+
                     if self.boss in self.objects and self.boss.hp > 1:
-                        if self.boss.switcher: #едет вверх
+                        if self.boss.introduction_damage: #выезжает
+                            self.create_damage(self.boss.rect.left-3, self.boss.rect.top)  # +5 чтобы урон не отставал от текстуры босса
+                            self.boss.hp -= 1
+                            self.objects.remove(bullet)
+                            self.bullets.remove(bullet)
+                            break
+                        elif self.boss.switcher and not self.boss.introduction_damage: #едет вверх
                             self.create_damage(self.boss.rect.left, self.boss.rect.top-3) #-3 чтобы урон не отставал от текстуры босса
                             self.boss.hp -= 1
                             self.objects.remove(bullet)
@@ -297,6 +389,18 @@ class Breakout(Game):
             else:
                 self.objects.remove(bullet)
                 self.bullets.remove(bullet)
+
+        for boss_bullet in self.boss_bullets:
+            if not intersect(self.screen, boss_bullet.rect):
+                self.objects.remove(boss_bullet)
+                self.boss_bullets.remove(boss_bullet)
+            if intersect(self.rocket.rect, boss_bullet.rect):
+                self.rocket.boom()
+                self.sound_effects['brick_hit'].play()
+                return
+
+
+
         for boom in self.booms:
             if boom.life <= 0:
                 self.booms.remove(boom)
@@ -306,6 +410,48 @@ class Breakout(Game):
             if damage.life <= 0:
                 self.damages.remove(damage)
                 self.objects.remove(damage)
+
+    def leaderboard(self):
+        f = open('C:\\Users\\gov99\\OneDrive\\Документы\\информатика\\18.txt', 'r')
+
+        c = 1
+        A1 = []
+        S1 = []
+
+        for line in f:
+            if c == 1:
+                S1.append(line)
+            if c == 2:
+                A1.append(int(line))
+            if c == 3:
+                c = 0
+            c += 1
+
+        A2 = A1.copy()
+        S2 = S1.copy()
+
+        s = input('Enter your nickname: ')
+        a = self.score
+
+        if S2.count(s + '\n') >= 1 and a > A2[S2.index(s + '\n')]:
+            A2.remove(A2[S2.index(s + '\n')])
+            A1.remove(A1[S2.index(s + '\n')])
+            S2.remove(s + '\n')
+        S2.append(s + '\n')
+        A2.append(a)
+        A1.append(a)
+
+        A2.sort()
+
+        f = open('C:\\Users\\gov99\\OneDrive\\Документы\\информатика\\18.txt', 'w')
+        for i in range(0, len(A2)):
+            f.write(S2[A1.index(A2[i])])
+            f.write(str(A2[i]))
+            f.write('\n')
+            f.write('\n')
+        f.close()
+
+
 
 
     def show_message(self, text, color=colors.WHITE, font_name='Arial', font_size=20, centralized=False):
@@ -318,7 +464,6 @@ class Breakout(Game):
 
 def main():
     Breakout().run()
-
 
 if __name__ == '__main__':
     main()
