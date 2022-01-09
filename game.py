@@ -44,9 +44,6 @@ class Game:
             if event.type == pygame.QUIT:  # "close window" button
                 self.quit_game()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
                 for handler in self.keydown_handlers[event.key]:
                     handler(event.key)
             elif event.type == pygame.KEYUP:
@@ -57,7 +54,7 @@ class Game:
                     handler(event.type, event.pos)
 
     @staticmethod
-    def quit_game():
+    def quit_game(_):
         pygame.quit()
         sys.exit()
 
