@@ -1,5 +1,4 @@
 import pygame
-import random
 from game_object import GameObject
 
 
@@ -14,19 +13,22 @@ class Alien(GameObject):
     def draw(self, surface):
         surface.blit(self.image_surface, (self.rect.left, self.rect.top))
 
-class Alien_UFO(Alien):
+
+class AlienUfo(Alien):
     def __init__(self, x, y):
         Alien.__init__(self, "images/alien2.png", x, y, (-2, 0))
 
-class Alien_Triangle(Alien):
+
+class AlienTriangle(Alien):
     def __init__(self, x, y):
         Alien.__init__(self, "images/alien1.png", x, y, (-1, 0))
 
-class Alien_Meteor(Alien):
+
+class AlienMeteor(Alien):
     def __init__(self, x, y):
         Alien.__init__(self, "images/alien3.png", x, y, (-5, 0))
 
-class Alien_Bug(Alien):
+
+class AlienBug(Alien):
     def __init__(self, x, y):
         Alien.__init__(self, "images/alien4.png", x, y, (-4, 0))
-

@@ -3,9 +3,10 @@ import pygame
 from game_object import GameObject
 import config as c
 
+
 class Boss(GameObject):
 
-    def __init__(self, image, x, y, hp):
+    def __init__(self, x, y):
         self.image_surface = pygame.image.load('images/boss1.png').convert_alpha()
         self.image_damage = pygame.image.load('images/boss1damage.png').convert_alpha()
         self._boom = False
@@ -14,7 +15,7 @@ class Boss(GameObject):
         self.x = c.screen_width
         self.y = c.screen_height/2
         self.switcher = True
-        self.introduction_damage = True #переменная чтобы хитбокс работал нормально когда он выезжает
+        self.introduction_damage = True  # переменная чтобы хитбокс работал нормально когда он выезжает
         self.bullet_delay = 0
         self.bullet_delay_next = 20
         rect = self.image_surface.get_rect()
@@ -54,6 +55,3 @@ class Boss(GameObject):
                 if self.y > 150 and not self.switcher:
                     self.move(0, 1)
                     self.y -= 1
-
-        self.fire = False
-

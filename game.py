@@ -5,6 +5,7 @@ import sys
 
 from collections import defaultdict
 
+
 class Game:
     def __init__(self, caption, width, height, back_image_filename, frame_rate):
         self.background_image = pygame.image.load(back_image_filename)
@@ -14,13 +15,13 @@ class Game:
         pygame.mixer.init(44100, -16, 2, 4096)
         pygame.init()
         pygame.font.init()
-        self.surface = pygame.display.set_mode((width, height), FULLSCREEN)
+        # self.surface = pygame.display.set_mode((width, height), FULLSCREEN)
+        self.surface = pygame.display.set_mode((width, height))
         pygame.display.set_caption(caption)
         self.clock = pygame.time.Clock()
         self.keydown_handlers = defaultdict(list)
         self.keyup_handlers = defaultdict(list)
         self.mouse_handlers = []
-
 
     def update(self):
         for o in self.objects:
@@ -45,7 +46,7 @@ class Game:
                 for handler in self.mouse_handlers:
                     handler(event.type, event.pos)
 
-    def leaderboard(self):    #функция написана в breakout, но вызывается здесь
+    def leaderboard(self):  # функция написана в breakout, но вызывается здесь
         pass
 
     def run(self):
@@ -58,4 +59,4 @@ class Game:
 
             pygame.display.update()
             self.clock.tick(self.frame_rate)
-        #self.leaderboard()
+        # self.leaderboard()
