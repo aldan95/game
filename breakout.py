@@ -27,7 +27,7 @@ assert os.path.isfile('sound_effects/brick_hit.wav')
 
 class Breakout(Game):
     def __init__(self):
-        Game.__init__(self, 'Space Insiders', c.screen_width, c.screen_height, c.background_image, c.frame_rate)
+        Game.__init__(self, 'Space Insiders', c.background_image, c.frame_rate)
         self.sound_effects = {name: pygame.mixer.Sound(sound) for name, sound in c.sounds_effects.items()}
         self.reset_effect = None
         self.effect_start_time = None

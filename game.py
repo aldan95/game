@@ -7,18 +7,24 @@ from collections import defaultdict
 
 
 class Game:
-    def __init__(self, caption, width, height, back_image_filename, frame_rate):
+    def __init__(self, caption, back_image_filename, frame_rate):
         self.background_image = pygame.image.load(back_image_filename)
         self.frame_rate = frame_rate
         self.game_over = False
         self.objects = []
+
         pygame.mixer.init(44100, -16, 2, 4096)
         pygame.init()
         pygame.font.init()
-        # self.surface = pygame.display.set_mode((width, height), FULLSCREEN)
-        self.surface = pygame.display.set_mode((width, height))
+
+        c.screen_width = pygame.display.Info().current_w
+        c.screen_height = pygame.display.Info().current_h
+
+        self.surface = pygame.display.set_mode((c.screen_width, c.screen_height), FULLSCREEN)
+
         pygame.display.set_caption(caption)
         self.clock = pygame.time.Clock()
+
         self.keydown_handlers = defaultdict(list)
         self.keyup_handlers = defaultdict(list)
         self.mouse_handlers = []
