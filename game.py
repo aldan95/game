@@ -14,9 +14,7 @@ class Game:
         pygame.mixer.init(44100, -16, 2, 4096)
         pygame.init()
         pygame.font.init()
-        c.screen_width = pygame.display.Info().current_w
-        c.screen_height = pygame.display.Info().current_h
-        self.surface = pygame.display.set_mode((c.screen_width, c.screen_height), FULLSCREEN)
+        self.surface = pygame.display.set_mode((width, height), FULLSCREEN)
         pygame.display.set_caption(caption)
         self.clock = pygame.time.Clock()
         self.keydown_handlers = defaultdict(list)

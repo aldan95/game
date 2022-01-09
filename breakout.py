@@ -44,7 +44,7 @@ class Breakout(Game):
         self.bullets = []
         self.booms = []
         self.damages = []
-        self.boss_score = 2   #сколько очков нужно набрать чтобы появился босс
+        self.boss_score = 50   #сколько очков нужно набрать чтобы появился босс
         self.boss_created = False
         self.boss_bullets = []
         self.boss = []
@@ -363,7 +363,7 @@ class Breakout(Game):
                         self.boss._boom = True
                         self.boss_score += 50
                         self.boss_hp += 10
-                        self.boss_bullet_delay_next -= 5
+                        self.boss_bullet_delay_next -= 8
                         self.boss_created = False
 
 
