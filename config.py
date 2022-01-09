@@ -2,6 +2,7 @@ import colors
 
 screen_width = 800
 screen_height = 600
+
 background_image = 'images/background.jpg'
 
 frame_rate = 90

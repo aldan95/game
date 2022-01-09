@@ -1,4 +1,6 @@
 import pygame
+from pygame.locals import *
+import config as c
 import sys
 
 from collections import defaultdict
@@ -12,7 +14,9 @@ class Game:
         pygame.mixer.init(44100, -16, 2, 4096)
         pygame.init()
         pygame.font.init()
-        self.surface = pygame.display.set_mode((width, height))
+        c.screen_width = pygame.display.Info().current_w
+        c.screen_height = pygame.display.Info().current_h
+        self.surface = pygame.display.set_mode((c.screen_width, c.screen_height), FULLSCREEN)
         pygame.display.set_caption(caption)
         self.clock = pygame.time.Clock()
         self.keydown_handlers = defaultdict(list)
@@ -56,4 +60,4 @@ class Game:
 
             pygame.display.update()
             self.clock.tick(self.frame_rate)
-        self.leaderboard()
+        #self.leaderboard()

@@ -87,8 +87,8 @@ class Breakout(Game):
             self.mouse_handlers.clear()
 
             for i, (text, click_handler) in enumerate((('NORMAL SURVIVAL', on_ns), ('BOSS SURVIVAL', on_bs), ('BACK', on_back))):
-                b = Button((c.screen_width - c.menu_button_w) / 2 - 45,  #-45 чтобы было ровно по центру
-                           c.menu_offset_y + (c.menu_button_h + 5) * i,
+                b = Button((c.screen_width - c.menu_button_w) / 2 - 45,  #-45 чтобы было ровно по центру по горизонтали++++
+                           c.menu_offset_y + (c.menu_button_h + 5) * i -30, #-30 чтобы было ровно по центру по вертикали
                            c.menu_button_w+90,
                            c.menu_button_h,
                            text,
