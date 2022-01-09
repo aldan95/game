@@ -16,11 +16,11 @@ class Alien(GameObject):
 
 class Alien_UFO(Alien):
     def __init__(self, x, y):
-        Alien.__init__(self, "images/alien2.png", x, y, (-1, 0))
+        Alien.__init__(self, "images/alien2.png", x, y, (-2, 0))
 
 class Alien_Triangle(Alien):
     def __init__(self, x, y):
-        Alien.__init__(self, "images/alien1.png", x, y, (-2, 0))
+        Alien.__init__(self, "images/alien1.png", x, y, (-1, 0))
 
 class Alien_Meteor(Alien):
     def __init__(self, x, y):
@@ -29,3 +29,4 @@ class Alien_Meteor(Alien):
 class Alien_Bug(Alien):
     def __init__(self, x, y):
         Alien.__init__(self, "images/alien4.png", x, y, (-4, 0))
+

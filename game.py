@@ -1,8 +1,9 @@
 import pygame
+from pygame.locals import *
+import config as c
 import sys
 
 from collections import defaultdict
-
 
 class Game:
     def __init__(self, caption, width, height, back_image_filename, frame_rate):
@@ -13,12 +14,13 @@ class Game:
         pygame.mixer.init(44100, -16, 2, 4096)
         pygame.init()
         pygame.font.init()
-        self.surface = pygame.display.set_mode((width, height))
+        self.surface = pygame.display.set_mode((width, height), FULLSCREEN)
         pygame.display.set_caption(caption)
         self.clock = pygame.time.Clock()
         self.keydown_handlers = defaultdict(list)
         self.keyup_handlers = defaultdict(list)
         self.mouse_handlers = []
+
 
     def update(self):
         for o in self.objects:
@@ -43,6 +45,9 @@ class Game:
                 for handler in self.mouse_handlers:
                     handler(event.type, event.pos)
 
+    def leaderboard(self):    #функция написана в breakout, но вызывается здесь
+        pass
+
     def run(self):
         while not self.game_over:
             self.surface.blit(self.background_image, (0, 0))
@@ -53,3 +58,4 @@ class Game:
 
             pygame.display.update()
             self.clock.tick(self.frame_rate)
+        #self.leaderboard()
