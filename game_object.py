@@ -1,10 +1,11 @@
 from pygame.rect import Rect
+import config as c
 
 
 class GameObject:
     def __init__(self, x, y, w, h, speed=(0, 0)):
         self._rect = Rect(x, y, w, h)
-        self._speed = speed
+        self._speed = (round(speed[0] * c.speed_scale), round(speed[1] * c.speed_scale))
 
     @property
     def rect(self):

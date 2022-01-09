@@ -1,4 +1,5 @@
 import pygame
+import config as c
 
 from game_object import GameObject
 
@@ -36,9 +37,9 @@ class Rocket(GameObject):
             self.fire = False
         else:
             if key == pygame.K_UP:
-                self.dy = -2
+                self.dy = round(-2 * c.speed_scale)
             elif key == pygame.K_DOWN:
-                self.dy = 2
+                self.dy = round(2 * c.speed_scale)
             elif key == pygame.K_SPACE:
                 self.fire = True
 

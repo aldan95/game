@@ -1,8 +1,14 @@
 import colors
 
+max_screen_width = 1600
+max_screen_height = 1000
+
 screen_width = 800
 screen_height = 600
 
+speed_scale = 1
+
+# https://wallpaperaccess.com/4k-hd-space#google_vignette
 background_image = 'images/background3.jpg'
 
 frame_rate = 90

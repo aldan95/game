@@ -17,10 +17,17 @@ class Game:
         pygame.init()
         pygame.font.init()
 
+        full_screen = FULLSCREEN
+
         c.screen_width = pygame.display.Info().current_w
         c.screen_height = pygame.display.Info().current_h
+        if c.screen_width > c.max_screen_width or c.screen_height > c.max_screen_height:
+            full_screen = 0
+            c.screen_width = c.max_screen_width
+            c.screen_height = c.max_screen_height
 
-        self.surface = pygame.display.set_mode((c.screen_width, c.screen_height), FULLSCREEN)
+        c.speed_scale = c.screen_width / 800
+        self.surface = pygame.display.set_mode((c.screen_width, c.screen_height), full_screen)
 
         pygame.display.set_caption(caption)
         self.clock = pygame.time.Clock()
@@ -42,7 +49,7 @@ class Game:
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # "close window" button
-                self.quit_game()
+                self.quit_game(pygame.K_ESCAPE)
             elif event.type == pygame.KEYDOWN:
                 for handler in self.keydown_handlers[event.key]:
                     handler(event.key)
