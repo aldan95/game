@@ -29,6 +29,8 @@ class Game:
         self.keyup_handlers = defaultdict(list)
         self.mouse_handlers = []
 
+        self.keydown_handlers[pygame.K_ESCAPE].append(self.quit_game)
+
     def update(self):
         for o in self.objects:
             o.update()
@@ -39,10 +41,12 @@ class Game:
 
     def handle_events(self):
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+            if event.type == pygame.QUIT:  # "close window" button
+                self.quit_game()
             elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
                 for handler in self.keydown_handlers[event.key]:
                     handler(event.key)
             elif event.type == pygame.KEYUP:
@@ -51,6 +55,11 @@ class Game:
             elif event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION):
                 for handler in self.mouse_handlers:
                     handler(event.type, event.pos)
+
+    @staticmethod
+    def quit_game():
+        pygame.quit()
+        sys.exit()
 
     def leaderboard(self):  # функция написана в breakout, но вызывается здесь
         pass
