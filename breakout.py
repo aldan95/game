@@ -44,7 +44,7 @@ class Breakout(Game):
         self.bullets = []
         self.booms = []
         self.damages = []
-        self.boss_score = 50  # сколько очков нужно набрать чтобы появился босс
+        self.boss_score = 200  # сколько очков нужно набрать чтобы появился босс
         self.boss_created = False
         self.boss_bullets = []
         self.boss = None
@@ -159,9 +159,11 @@ class Breakout(Game):
         self.keydown_handlers[pygame.K_UP].append(rocket.handle_down)
         self.keydown_handlers[pygame.K_DOWN].append(rocket.handle_down)
         self.keydown_handlers[pygame.K_SPACE].append(rocket.handle_down)
+        self.keydown_handlers[pygame.K_ESCAPE].append(rocket.handle_down)
         self.keyup_handlers[pygame.K_UP].append(rocket.handle_up)
         self.keyup_handlers[pygame.K_DOWN].append(rocket.handle_up)
         self.keyup_handlers[pygame.K_SPACE].append(rocket.handle_up)
+        self.keyup_handlers[pygame.K_ESCAPE].append(rocket.handle_up)
         self.rocket = rocket
         self.objects.append(self.rocket)
 
@@ -356,7 +358,7 @@ class Breakout(Game):
                         self.score = self.score + 5
                         self.sound_effects['brick_hit'].play()
                         self.boss._boom = True
-                        self.boss_score += 50
+                        self.boss_score += 200
                         self.boss_hp += 10
                         self.boss_bullet_delay_next -= 8
                         self.boss_created = False

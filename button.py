@@ -30,6 +30,8 @@ class Button(GameObject):
             self.handle_mouse_down(pos)
         elif type == pygame.MOUSEBUTTONUP:
             self.handle_mouse_up(pos)
+        elif type == pygame.K_KP_ENTER:
+            self.handle_escape
 
     def handle_mouse_move(self, pos):
         if self._rect.collidepoint(pos):
@@ -46,3 +48,7 @@ class Button(GameObject):
         if self.state == 'pressed':
             self.on_click(self)
             self.state = 'hover'
+
+    def handle_escape(self):
+        self.is_game_running = False
+        self.game_over = True

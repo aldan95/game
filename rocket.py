@@ -1,5 +1,5 @@
 import pygame
-
+import config as c
 from game_object import GameObject
 
 
@@ -13,6 +13,7 @@ class Rocket(GameObject):
         rect = self.image_surface.get_rect()
         GameObject.__init__(self, x + rect.left, y + rect.top, rect.width, rect.height)
         self.dy = 0
+        self.y = c.screen_height/2
         self.fire = False
         self._boom = False
         return
@@ -48,7 +49,13 @@ class Rocket(GameObject):
         else:
             self.dy = 0
 
+
     def update(self):
         if not self._boom:
-            self.move(0, self.dy)
+            if self.dy > 0 and self.y < 566:  # 9600 - высота текстуры ракеты
+                self.move(0, self.dy)
+                self.y += self.dy
+            elif self.dy < 0 and self.y > 0:
+                self.move(0, self.dy)
+                self.y += self.dy
         self.fire = False
