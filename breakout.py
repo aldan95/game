@@ -44,12 +44,11 @@ class Breakout(Game):
         self.bullets = []
         self.booms = []
         self.damages = []
-        self.boss_score = 200  # сколько очков нужно набрать чтобы появился босс
+        self.boss_score = 2  # сколько очков нужно набрать чтобы появился босс
         self.boss_created = False
         self.boss_bullets = []
         self.boss = None
         self.boss_bullet_delay_next = 100
-        self.boss_hp = 20
         self.create_objects()
         self.screen = Rect(0, 0, c.screen_width, c.screen_height)
 
@@ -57,26 +56,118 @@ class Breakout(Game):
         self.lives += 1
 
     def create_menu(self):
+
+        self.is_menu_message2 = False
+
         def on_play(_):
 
-            def on_ns(_):
+            if self.is_menu_message2:
+                self.objects.remove(self.menu_message2)
+
+            def on_standard_mode(_):
+
+                self.objects.remove(self.menu_message)
+                self.objects.append(self.menu_message2)
+                self.is_menu_message2 = True
+
+                def on_normal_survival(_):
+
+                    self.objects.remove(self.menu_message2)
+                    for b in self.menu_buttons:
+                        self.objects.remove(b)
+                    self.menu_buttons.clear()
+                    self.mouse_handlers.clear()
+                    self.is_game_running_normal = True
+                    self.start_level = True
+                    self.pause = False
+
+                def on_boss_survival(_):
+
+                    self.objects.remove(self.menu_message2)
+                    for b in self.menu_buttons:
+                        self.objects.remove(b)
+                    self.menu_buttons.clear()
+                    self.mouse_handlers.clear()
+                    self.is_game_running_boss = True
+                    self.start_level = True
+                    self.pause = False
 
                 for b in self.menu_buttons:
                     self.objects.remove(b)
-                self.is_game_running_normal = True
-                self.start_level = True
+                self.menu_buttons.clear()
+                self.mouse_handlers.clear()
 
-            def on_bs(_):
+                for i, (text, click_handler) in enumerate(
+                        (('NORMAL SURVIVAL', on_normal_survival),
+                         ('BOSS SURVIVAL', on_boss_survival), ('BACK', on_play))):
+                    b = Button((c.screen_width - c.menu_button_w) // 2 - 45,
+                               # -45 чтобы было ровно по центру по горизонтали++++
+                               c.menu_offset_y + (c.menu_button_h + 5) * i - 30,
+                               # -30 чтобы было ровно по центру по вертикали
+                               c.menu_button_w + 100,
+                               c.menu_button_h,
+                               text,
+                               click_handler,
+                               padding=5)
+                    self.objects.append(b)
+                    self.menu_buttons.append(b)
+                    self.mouse_handlers.append(b.handle_mouse_event)
+
+            def on_death_swing(_):
+
+                self.objects.remove(self.menu_message)
+                self.objects.append(self.menu_message2)
+                c.death_swing = True
+
+                def on_normal_survival(_):
+
+                    self.objects.remove(self.menu_message2)
+                    for b in self.menu_buttons:
+                        self.objects.remove(b)
+                    self.menu_buttons.clear()
+                    self.mouse_handlers.clear()
+                    self.is_game_running_normal = True
+                    self.start_level = True
+                    self.pause = False
+
+                def on_boss_survival(_):
+
+                    self.objects.remove(self.menu_message2)
+                    for b in self.menu_buttons:
+                        self.objects.remove(b)
+                    self.menu_buttons.clear()
+                    self.mouse_handlers.clear()
+                    self.is_game_running_boss = True
+                    self.start_level = True
+                    self.pause = False
+
                 for b in self.menu_buttons:
                     self.objects.remove(b)
-                self.is_game_running_boss = True
-                self.start_level = True
+                self.menu_buttons.clear()
+                self.mouse_handlers.clear()
+
+                for i, (text, click_handler) in enumerate(
+                        (('NORMAL SURVIVAL', on_normal_survival),
+                         ('BOSS SURVIVAL', on_boss_survival), ('BACK', on_play))):
+                    b = Button((c.screen_width - c.menu_button_w) // 2 - 45,
+                               # -45 чтобы было ровно по центру по горизонтали++++
+                               c.menu_offset_y + (c.menu_button_h + 5) * i - 30,
+                               # -30 чтобы было ровно по центру по вертикали
+                               c.menu_button_w + 100,
+                               c.menu_button_h,
+                               text,
+                               click_handler,
+                               padding=5)
+                    self.objects.append(b)
+                    self.menu_buttons.append(b)
+                    self.mouse_handlers.append(b.handle_mouse_event)
 
             def on_back(_):
                 for b in self.menu_buttons:
                     self.objects.remove(b)
                 self.menu_buttons.clear()
                 self.mouse_handlers.clear()
+                self.objects.remove(self.menu_message)
                 self.create_menu()
                 return
 
@@ -85,13 +176,34 @@ class Breakout(Game):
             self.menu_buttons.clear()
             self.mouse_handlers.clear()
 
+            self.menu_message = TextObject(c.screen_width / 2 - 80,
+                                            c.screen_height / 2 - 100,
+                                            lambda: f'SELECT GAME MODE',
+                                            c.text_color,
+                                            c.font_name,
+                                            c.font_size)
+
+            self.menu_message2 = TextObject(c.screen_width / 2 - 90,
+                                            c.screen_height / 2 - 100,
+                                            lambda: f'SELECT SURVIVAL MODE',
+                                            c.text_color,
+                                            c.font_name,
+                                            c.font_size)
+
+            self.objects.append(self.menu_message)
+
+            if self.objects.count(self.menu_message2) == 1:
+
+                self.objects.remove(self.menu_message2)
+
             for i, (text, click_handler) in enumerate(
-                    (('NORMAL SURVIVAL', on_ns), ('BOSS SURVIVAL', on_bs), ('BACK', on_back))):
+                    (('STANDARD MODE', on_standard_mode),
+                     ('DEATH SWING MODE', on_death_swing), ('BACK', on_back))):
                 b = Button((c.screen_width - c.menu_button_w) // 2 - 45,
                            # -45 чтобы было ровно по центру по горизонтали++++
                            c.menu_offset_y + (c.menu_button_h + 5) * i - 30,
                            # -30 чтобы было ровно по центру по вертикали
-                           c.menu_button_w + 90,
+                           c.menu_button_w + 100,
                            c.menu_button_h,
                            text,
                            click_handler,
@@ -159,28 +271,22 @@ class Breakout(Game):
         self.keydown_handlers[pygame.K_UP].append(rocket.handle_down)
         self.keydown_handlers[pygame.K_DOWN].append(rocket.handle_down)
         self.keydown_handlers[pygame.K_SPACE].append(rocket.handle_down)
-        self.keydown_handlers[pygame.K_ESCAPE].append(rocket.handle_down)
+        self.keydown_handlers[pygame.K_RIGHT].append(rocket.handle_down)
+        self.keydown_handlers[pygame.K_LEFT].append(rocket.handle_down)
         self.keyup_handlers[pygame.K_UP].append(rocket.handle_up)
         self.keyup_handlers[pygame.K_DOWN].append(rocket.handle_up)
         self.keyup_handlers[pygame.K_SPACE].append(rocket.handle_up)
-        self.keyup_handlers[pygame.K_ESCAPE].append(rocket.handle_up)
+        self.keyup_handlers[pygame.K_RIGHT].append(rocket.handle_up)
+        self.keyup_handlers[pygame.K_LEFT].append(rocket.handle_up)
         self.rocket = rocket
         self.objects.append(self.rocket)
 
     def create_boss(self):
         self.boss = Boss(c.screen_width, c.screen_height // 2)
-        self.boss.hp = self.boss_hp
+        self.boss.hp = c.boss_hp
         self.objects.append(self.boss)
         self.boss._boom = False
 
-    '''def create_alien(self):
-        alien = Alien(c.screen_width - 30, random.randint(0, c.screen_height - 40))
-        self.aliens.append(alien)
-        self.objects.append(alien)
-        self.aliens_to_pass = self.aliens_to_pass - 1
-        if self.aliens_to_pass == 0:
-            self.alien_count = self.alien_count + 1
-            self.aliens_to_pass = self.alien_count * 3'''
 
     def create_alien_ufo(self):
         alien_ufo = AlienUfo(c.screen_width - 30, random.randint(0, c.screen_height - 40))
@@ -239,7 +345,7 @@ class Breakout(Game):
         self.objects.append(damage)
 
     def update(self):
-        if not self.is_game_running_normal and not self.is_game_running_boss:
+        if self.pause:
             return
 
         if self.start_level:
@@ -282,6 +388,11 @@ class Breakout(Game):
                 elif not self.boss._boom and self.boss.bullet_delay == self.boss_bullet_delay_next:
                     self.boss.bullet_delay = 0
                     self.create_boss_bullet()
+
+        # if not self.boss_created and len(self.damages) == 1:  # если вдруг случится баг и damage не исчезнет
+            # for damage in self.damages:
+               # self.objects.remove(damage)
+
         super().update()
 
         if self.game_over:
@@ -358,29 +469,29 @@ class Breakout(Game):
                         self.score = self.score + 5
                         self.sound_effects['brick_hit'].play()
                         self.boss._boom = True
-                        self.boss_score += 200
-                        self.boss_hp += 10
+                        self.boss_score += 10
+                        c.boss_hp += 10
                         self.boss_bullet_delay_next -= 8
                         self.boss_created = False
 
                     if self.boss in self.objects and self.boss.hp > 1:
                         if self.boss.introduction_damage:  # выезжает
                             self.create_damage(self.boss.rect.left - 3,
-                                               self.boss.rect.top)  # +5 чтобы урон не отставал от текстуры босса
+                                              self.boss.rect.top)  # +5 чтобы урон не отставал от текстуры босса
                             self.boss.hp -= 1
                             self.objects.remove(bullet)
                             self.bullets.remove(bullet)
                             break
-                        elif self.boss.switcher and not self.boss.introduction_damage:  # едет вверх
+                        elif self.boss.switcher and not self.boss.introduction_damage and self.boss.hp > 1:  # едет вверх
                             self.create_damage(self.boss.rect.left,
-                                               self.boss.rect.top - 3)  # -3 чтобы урон не отставал от текстуры босса
+                                              self.boss.rect.top - 3)  # -3 чтобы урон не отставал от текстуры босса
                             self.boss.hp -= 1
                             self.objects.remove(bullet)
                             self.bullets.remove(bullet)
                             break
-                        else:  # едет вниз
+                        elif not self.boss.switcher and not self.boss.introduction_damage and self.boss.hp > 1:  # едет вниз
                             self.create_damage(self.boss.rect.left,
-                                               self.boss.rect.top + 3)  # +4 чтобы урон не отставал от текстуры босса
+                                            self.boss.rect.top + 3)  # +4 чтобы урон не отставал от текстуры босса
                             self.boss.hp -= 1
                             self.objects.remove(bullet)
                             self.bullets.remove(bullet)

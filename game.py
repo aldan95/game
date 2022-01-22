@@ -13,7 +13,7 @@ class Game:
         self.frame_rate = frame_rate
         self.game_over = False
         self.objects = []
-        self.pause = False
+        self.pause = True
         pygame.mixer.init(44100, -16, 2, 4096)
         pygame.init()
         pygame.font.init()
@@ -42,12 +42,6 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE and not self.pause:
 
-                    if self.is_game_running_boss:
-                        self.is_game_running_boss = False
-
-                    elif self.is_game_running_normal:
-                        self.is_game_running_normal = False
-
                     self.pause_message = TextObject(c.screen_width/2-60,
                                                   c.screen_height/2-100,
                                                   lambda: f'GAME PAUSED',
@@ -59,8 +53,14 @@ class Game:
                     self.pause = True
 
                     def on_mm(_):
-                        print(1)
-                          # create_menu()
+                        self.objects.remove(self.pause_message)
+                        self.pause = True
+                        self.start_level = False
+                        self.is_game_running_normal = False
+                        self.is_game_running_boss = False
+                        self.create_menu()
+                        return
+
 
                     def on_quit(_):
                         pygame.quit()
@@ -70,7 +70,7 @@ class Game:
                     for i, (text, click_handler) in enumerate(
                             (('MAIN MENU', on_mm), ('QUIT', on_quit))):
                         b = Button((c.screen_width - c.menu_button_w) // 2 - 45,
-                                   # -45 чтобы было ровно по центру по горизонтали++++
+                                   # -45 чтобы было ровно по центру по горизонтали
                                    c.menu_offset_y + (c.menu_button_h + 5) * i - 30,
                                    # -30 чтобы было ровно по центру по вертикали
                                    c.menu_button_w + 90,
@@ -86,7 +86,6 @@ class Game:
 
 
                 elif event.key == pygame.K_ESCAPE and self.pause:
-                    self.is_game_running_boss = True
                     self.pause = False
                     self.objects.remove(self.pause_message)
                     for b in self.menu_buttons:

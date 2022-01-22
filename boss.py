@@ -3,12 +3,15 @@ import pygame
 from game_object import GameObject
 import config as c
 
-
 class Boss(GameObject):
 
     def __init__(self, x, y):
         self.image_surface = pygame.image.load('images/boss1.png').convert_alpha()
-        self.image_damage = pygame.image.load('images/boss1damage.png').convert_alpha()
+        self.image_surface2 = pygame.image.load('images/boss2.png').convert_alpha()
+        self.image_surface3 = pygame.image.load('images/boss3.png').convert_alpha()
+        self.image_surface4 = pygame.image.load('images/boss4.png').convert_alpha()
+        self.image_surface5 = pygame.image.load('images/boss5.png').convert_alpha()
+
         self._boom = False
         self._damage = False
         self.hp = 10
@@ -33,10 +36,19 @@ class Boss(GameObject):
     def draw(self, surface):
         if self._boom:
             surface.blit(self.boom_surface, (self.rect.left, self.rect.top))
-        elif self._damage:
-            surface.blit(self.image_damage, (self.rect.left, self.rect.top))
-        else:
+
+
+        elif self.hp > (c.boss_hp/5)*4:
             surface.blit(self.image_surface, (self.rect.left, self.rect.top))
+        elif (c.boss_hp / 5)*4 >= self.hp > (c.boss_hp / 5)*3:
+            surface.blit(self.image_surface2, (self.rect.left, self.rect.top))
+        elif (c.boss_hp / 5)*3 >= self.hp > (c.boss_hp / 5)*2:
+            surface.blit(self.image_surface3, (self.rect.left, self.rect.top))
+        elif (c.boss_hp / 5)*2 >= self.hp > (c.boss_hp / 5):
+            surface.blit(self.image_surface4, (self.rect.left, self.rect.top))
+        elif self.hp <= c.boss_hp / 5:
+            surface.blit(self.image_surface5, (self.rect.left, self.rect.top))
+
 
     def update(self):
         if not self._boom:
@@ -55,3 +67,4 @@ class Boss(GameObject):
                 if self.y > 150 and not self.switcher:
                     self.move(0, 1)
                     self.y -= 1
+

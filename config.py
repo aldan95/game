@@ -53,3 +53,6 @@ menu_offset_x = 20
 menu_offset_y = 300
 menu_button_w = 80
 menu_button_h = 50
+
+death_swing = False
+boss_hp = 20
