@@ -12,8 +12,15 @@ class Boss(GameObject):
         self.image_surface4 = pygame.image.load('images/boss4.png').convert_alpha()
         self.image_surface5 = pygame.image.load('images/boss5.png').convert_alpha()
 
+        self.image_damage = pygame.image.load('images/boss1damage.png').convert_alpha()
+        self.image_damage2 = pygame.image.load('images/boss2damaged.png').convert_alpha()
+        self.image_damage3 = pygame.image.load('images/boss3damaged.png').convert_alpha()
+        self.image_damage4 = pygame.image.load('images/boss4damaged.png').convert_alpha()
+        self.image_damage5 = pygame.image.load('images/boss5damaged.png').convert_alpha()
+
         self._boom = False
         self._damage = False
+        self.damage_life = 5
         self.hp = 10
         self.x = c.screen_width
         self.y = c.screen_height/2
@@ -30,13 +37,26 @@ class Boss(GameObject):
     def boomed(self):
         return self._boom
 
-    def damage(self):
-        self._damage = True
+    #def damage(self):
+    #    self._damage = True
 
     def draw(self, surface):
         if self._boom:
             surface.blit(self.boom_surface, (self.rect.left, self.rect.top))
-
+        if self._damage and self.damage_life > 0:
+            if self.hp > (c.boss_hp / 5) * 4:
+                surface.blit(self.image_damage, (self.rect.left, self.rect.top))
+            elif (c.boss_hp / 5) * 4 >= self.hp > (c.boss_hp / 5) * 3:
+                surface.blit(self.image_damage2, (self.rect.left, self.rect.top))
+            elif (c.boss_hp / 5) * 3 >= self.hp > (c.boss_hp / 5) * 2:
+                surface.blit(self.image_damage3, (self.rect.left, self.rect.top))
+            elif (c.boss_hp / 5) * 2 >= self.hp > (c.boss_hp / 5):
+                surface.blit(self.image_damage4, (self.rect.left, self.rect.top))
+            elif self.hp <= c.boss_hp / 5:
+                surface.blit(self.image_damage5, (self.rect.left, self.rect.top))
+        elif self.damage_life == 0:
+            self.damage_life = 5
+            self._damage = False
 
         elif self.hp > (c.boss_hp/5)*4:
             surface.blit(self.image_surface, (self.rect.left, self.rect.top))
@@ -67,4 +87,8 @@ class Boss(GameObject):
                 if self.y > 150 and not self.switcher:
                     self.move(0, 1)
                     self.y -= 1
+
+            if self._damage:
+                if self.damage_life > 0:
+                    self.damage_life -= 1
 

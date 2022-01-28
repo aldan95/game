@@ -44,7 +44,7 @@ class Breakout(Game):
         self.bullets = []
         self.booms = []
         self.damages = []
-        self.boss_score = 2  # сколько очков нужно набрать чтобы появился босс
+        self.boss_score = 50  # сколько очков нужно набрать чтобы появился босс
         self.boss_created = False
         self.boss_bullets = []
         self.boss = None
@@ -339,10 +339,11 @@ class Breakout(Game):
         self.booms.append(boom)
         self.objects.append(boom)
 
-    def create_damage(self, x, y):
-        damage = Damage(x, y)
-        self.damages.append(damage)
-        self.objects.append(damage)
+
+#    def create_damage(self, x, y):
+ #       damage = Boss.damage(x, y)
+  #      self.damages.append(damage)
+   #     self.objects.append(damage)
 
     def update(self):
         if self.pause:
@@ -469,29 +470,32 @@ class Breakout(Game):
                         self.score = self.score + 5
                         self.sound_effects['brick_hit'].play()
                         self.boss._boom = True
-                        self.boss_score += 10
+                        self.boss_score += 50
                         c.boss_hp += 10
                         self.boss_bullet_delay_next -= 8
                         self.boss_created = False
 
                     if self.boss in self.objects and self.boss.hp > 1:
                         if self.boss.introduction_damage:  # выезжает
-                            self.create_damage(self.boss.rect.left - 3,
-                                              self.boss.rect.top)  # +5 чтобы урон не отставал от текстуры босса
+                            # self.create_damage(self.boss.rect.left - 3,
+                            #                  self.boss.rect.top)  # +5 чтобы урон не отставал от текстуры босса
+                            self.boss._damage = True
                             self.boss.hp -= 1
                             self.objects.remove(bullet)
                             self.bullets.remove(bullet)
                             break
                         elif self.boss.switcher and not self.boss.introduction_damage and self.boss.hp > 1:  # едет вверх
-                            self.create_damage(self.boss.rect.left,
-                                              self.boss.rect.top - 3)  # -3 чтобы урон не отставал от текстуры босса
+                            # self.create_damage(self.boss.rect.left,
+                            #                   self.boss.rect.top - 3)  # -3 чтобы урон не отставал от текстуры босса
+                            self.boss._damage = True
                             self.boss.hp -= 1
                             self.objects.remove(bullet)
                             self.bullets.remove(bullet)
                             break
                         elif not self.boss.switcher and not self.boss.introduction_damage and self.boss.hp > 1:  # едет вниз
-                            self.create_damage(self.boss.rect.left,
-                                            self.boss.rect.top + 3)  # +4 чтобы урон не отставал от текстуры босса
+                            # self.create_damage(self.boss.rect.left,
+                            #                 self.boss.rect.top + 3)  # +4 чтобы урон не отставал от текстуры босса
+                            self.boss._damage = True
                             self.boss.hp -= 1
                             self.objects.remove(bullet)
                             self.bullets.remove(bullet)
